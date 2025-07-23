@@ -36,7 +36,7 @@ class AdminAuthController extends Controller
             $data = array(
                         'user'  =>  $user,
                         'token' =>  array(
-                                        'chemist_admin_token' => $token,
+                                        'admin_token' => $token,
                                         'token_type'          => 'bearer',
                                         'expires_in'          => Auth::factory()->getTTL() * 60
                                     )
@@ -61,7 +61,7 @@ class AdminAuthController extends Controller
 
 
             $response->cookie(
-                'chemist_refresh_token',
+                'admin_refresh_token',
                 $refreshToken,
                 43200,
                 '/',  
@@ -101,16 +101,16 @@ class AdminAuthController extends Controller
 
     public function refresh()
     {
-        if (request()->cookie('chemist_refresh_token')) {
+        if (request()->cookie('admin_refresh_token')) {
 
-            $payload = JWTAuth::manager()->getJWTProvider()->decode(request()->cookie('chemist_refresh_token'));
+            $payload = JWTAuth::manager()->getJWTProvider()->decode(request()->cookie('admin_refresh_token'));
 
             
-            if (array_key_exists("refresh_token", $payload) && $payload['refresh_token']) {
-                $user = JWTAuth::setToken(request()->cookie('chemist_refresh_token'))->toUser();
+            if (array_key_exists("admin_refresh_token", $payload) && $payload['admin_refresh_token']) {
+                $user = JWTAuth::setToken(request()->cookie('admin_refresh_token'))->toUser();
                 if ($user) {
                     return response()->json([
-                        'chemist_admin_token' => JWTAuth::fromUser($user),
+                        'admin_token' => JWTAuth::fromUser($user),
                         'token_type'          => 'bearer',
                         'expires_in'          => Auth::factory()->getTTL() * 60
                     ]);
@@ -131,11 +131,11 @@ class AdminAuthController extends Controller
         try {
             Auth::logout();
 
-            JWTAuth::manager()->invalidate(new Token(request()->cookie('chemist_refresh_token')), true);
+            JWTAuth::manager()->invalidate(new Token(request()->cookie('admin_refresh_token')), true);
 
             return response()->json([
                 'status'    => true,
-            ])->cookie('chemist_refresh_token', null, 43200, null, null, true, true );
+            ])->cookie('admin_refresh_token', null, 43200, null, null, true, true );
 
         } catch (\Throwable $th) {
             return response()->json([
