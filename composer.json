@@ -10,6 +10,17 @@
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "mews/captcha": "^3.4",
+        "mews/purifier": "^3.4",
+        "phpmailer/phpmailer": "^6.10",
+        "predis/predis": "^2.3",
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-activitylog": "^4.10",
+        "spatie/laravel-permission": "^6.16",
+        "srmklive/paypal": "^3.0",
+        "stancl/tenancy": "^3.9",
+        "stripe/stripe-php": "^16.4",
+        "torann/geoip": "^3.0",
         "tymon/jwt-auth": "^2.2"
     },
     "require-dev": {
