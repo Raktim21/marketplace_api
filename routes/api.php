@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SellerController;
 use App\Http\Middleware\JWTAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,20 @@ use Illuminate\Support\Facades\Route;
             Route::get('analytics', [DashboardController::class, 'analytics' ]);
 
 
+            Route::controller(SellerController::class)->group(function(){
+                Route::get('sellers', 'index');
+                Route::post('sellers-bulk-email', 'bulkEmail');
+                Route::get('sellers-log/{id}', 'sellerLog');
+                Route::get('sellers-order/{id}', 'sellerOrder');
+                Route::put('sellers-status/{id}', 'status');
+                Route::get('sellers-delete/{id}', 'delete');
+                // Route::get('sellers-login/{id}', 'sellerLogin');
+                // Route::post('sellers-payment/{id}', 'paymentSetting');
+
+
+                // Route::get('contact-list', 'contact');
+                // Route::delete('contact-delete/{id}', 'contactDelete');
+            });
 
         });
     
