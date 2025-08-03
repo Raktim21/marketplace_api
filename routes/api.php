@@ -59,7 +59,11 @@ use Illuminate\Support\Facades\Route;
         Route::post('register',[AuthController::class,'register']);
         Route::post('register-email-verify',[AuthController::class,'registerEmailVerify']);
         Route::post('login',[AuthController::class,'login']);
-        Route::get('refresh',[AdminAuthController::class,'refresh']);
+        Route::get('refresh',[AuthController::class,'refresh']);
+
+        Route::put('forget-pass', [AuthController::class, 'forgetPassword']);
+        Route::put('verify-otp', [AuthController::class, 'verifyOtp']);
+        Route::put('reset-pass', [AuthController::class, 'resetPassword']);
     
         Route::middleware([
             JWTAuthMiddleware::class,
@@ -71,9 +75,6 @@ use Illuminate\Support\Facades\Route;
 
             Route::get('dashboard', [DashboardController::class, 'index' ]);
             Route::get('analytics', [DashboardController::class, 'analytics' ]);
-
-
-    
 
         });
     

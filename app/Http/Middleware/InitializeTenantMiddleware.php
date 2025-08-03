@@ -17,6 +17,14 @@ class InitializeTenantMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+
+        if (Auth::user()->tenant_id == null) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized.'
+            ], 401);
+        }
+
         $tenant = Tenant::find(Auth::user()->tenant_id);
 
         tenancy()->initialize($tenant);
