@@ -232,7 +232,7 @@ class SellerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Seller deleted successfully'
-            ]);
+            ], 200);
     
         } catch (TenantCouldNotBeIdentifiedById $e) {
             return response()->json([

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SellerController;
+use App\Http\Controllers\Seller\AuthController;
+use App\Http\Middleware\InitializeTenantMiddleware;
 use App\Http\Middleware\JWTAuthMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +51,40 @@ use Illuminate\Support\Facades\Route;
 
         });
     
+    });
+
+
+
+    Route::prefix('seller')->group(function () {
+        Route::post('register',[AuthController::class,'register']);
+        Route::post('register-email-verify',[AuthController::class,'registerEmailVerify']);
+        Route::post('login',[AuthController::class,'login']);
+        Route::get('refresh',[AdminAuthController::class,'refresh']);
+    
+        Route::middleware([
+            JWTAuthMiddleware::class,
+            InitializeTenantMiddleware::class
+        ])->group(function () {
+    
+            Route::get('me', [AdminAuthController::class, 'me']);
+            Route::post('logout',[AdminAuthController::class,'logout']);
+
+            Route::get('dashboard', [DashboardController::class, 'index' ]);
+            Route::get('analytics', [DashboardController::class, 'analytics' ]);
+
+
+    
+
+        });
+    
+    });
+
+
+    Route::fallback(function () {
+        return response()->json([
+            'status' => false,
+            'message' => 'Not Found'
+        ], 404);
     });
     
 // });
