@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Seller\AuthController;
+use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Middleware\InitializeTenantMiddleware;
 use App\Http\Middleware\JWTAuthMiddleware;
 use Illuminate\Http\Request;
@@ -73,8 +74,17 @@ use Illuminate\Support\Facades\Route;
             Route::get('me', [AdminAuthController::class, 'me']);
             Route::post('logout',[AdminAuthController::class,'logout']);
 
-            Route::get('dashboard', [DashboardController::class, 'index' ]);
-            Route::get('analytics', [DashboardController::class, 'analytics' ]);
+            Route::get('email-otp', [AdminAuthController::class, 'emailOtp']);
+            Route::put('verify-otp', [AdminAuthController::class, 'verifyOtp']);
+
+            Route::get('profile', [AdminAuthController::class, 'profile']);
+            Route::put('profile-info-update', [AdminAuthController::class, 'profileInfoUpdate']);
+            Route::post('profile-image-update', [AdminAuthController::class, 'profilePicUpdate']);
+            Route::post('profile-pass-update', [AdminAuthController::class, 'profilePassUpdate']);
+
+
+            Route::get('analytics', [SellerDashboardController::class, 'index' ]);
+            // Route::get('analytics', [SellerDashboardController::class, 'analytics' ]);
 
         });
     

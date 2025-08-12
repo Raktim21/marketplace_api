@@ -205,6 +205,24 @@ class AuthController extends Controller
                 '--force' => true,
             ]);
 
+            DB::table('tenant'.$user->tenant_id .'.general_settings')->insert([
+                'name'    => "Sellhub",
+                'address' => "Address",
+                'email'   => $user->tenant_id,
+                'phone'   => "0120000000",
+                'logo'    => "Sellhub",
+                'favicon' => "Sellhub",
+            ]);
+
+            DB::table('tenant'.$user->tenant_id .'.users')->insert([
+                'name'     => $user->name,
+                'email'    => $user->email,
+                'password' => $user->password,
+                'role'     => 1,
+                'country'  => $user->country
+            ]);
+
+
             DB::commit();
 
             return response()->json([
