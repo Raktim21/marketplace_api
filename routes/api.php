@@ -79,8 +79,8 @@ use Illuminate\Support\Facades\Route;
 
             Route::get('profile', [AdminAuthController::class, 'profile']);
             Route::put('profile-info-update', [AdminAuthController::class, 'profileInfoUpdate']);
+            Route::put('profile-pass-update', [AdminAuthController::class, 'profilePassUpdate']);
             Route::post('profile-image-update', [AdminAuthController::class, 'profilePicUpdate']);
-            Route::post('profile-pass-update', [AdminAuthController::class, 'profilePassUpdate']);
 
 
             Route::get('analytics', [SellerDashboardController::class, 'index' ]);

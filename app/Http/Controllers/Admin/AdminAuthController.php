@@ -269,13 +269,13 @@ class AdminAuthController extends Controller
         $otp = UserEmailOtp::where('email', Auth::user()->email)->latest()->first();
 
         if ($otp->otp != $request->otp) {
-            UserEmailOtp::where('email', Auth::user()->email)->delete();
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP. Please try again.'
             ], 400);
         }
 
+        UserEmailOtp::where('email', Auth::user()->email)->delete();
 
 
         $user->name  = $request->name;
@@ -299,15 +299,39 @@ class AdminAuthController extends Controller
 
     public function profilePicUpdate(Request $request)
     {
+
+        $validate = Validator::make($request->all(), [
+            'image' => 'image|mimes:jpeg,png,jpg|max:1024',
+            'otp'   => 'required',
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validate->errors()->all()
+            ], 422);
+        }
+
+
         $user = User::where('email', Auth::user()->email)->first();
 
         if ($user == null) {
-            return redirect()->back()->with('error', 'User not found');
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
         }
 
-        $request->validate([
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
+
+        $otp = UserEmailOtp::where('email', Auth::user()->email)->latest()->first();
+        if ($otp->otp != $request->otp) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP. Please try again.'
+            ], 400);
+        }
+        UserEmailOtp::where('email', Auth::user()->email)->delete();
+
 
 
         $image = $request->file('image');
@@ -317,24 +341,60 @@ class AdminAuthController extends Controller
         $user->image = $image_path;
         $user->save();
 
-        return redirect()->back()->with('success', 'Image updated successfully');
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile image updated successfully.',
+        ], 200);
     }
     
 
     public function profilePassUpdate(Request $request)
     {
-        $user = User::where('email', Auth::user()->email)->first();
 
-        $request->validate([
-            'current_password'      =>  'required',
+        $validator = Validator::make($request->all(), [
+            'current_password'      => 'required',
             'password'              => 'required|confirmed|min:6|',
             'password_confirmation' => 'required|same:password',
+            'otp'                   => 'required'
         ]);
 
-        if (!Hash::check($request->current_password, $user->password)) {
-            
-            return back()->with('error', 'Your current password does not match');
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()->all()
+            ], 422);
         }
+
+
+
+        $user = User::where('email', Auth::user()->email)->first();
+
+        if ($user == null) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Current password is incorrect.'
+            ], 400);
+        }
+
+
+
+        $otp = UserEmailOtp::where('email', Auth::user()->email)->latest()->first();
+        if ($otp->otp != $request->otp) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP. Please try again.'
+            ], 400);
+        }
+        UserEmailOtp::where('email', Auth::user()->email)->delete();
+
 
         $user->password = Hash::make($request->password);
         $user->save();
@@ -347,7 +407,10 @@ class AdminAuthController extends Controller
             'password'  =>  Hash::make($request->password),
         ]);
 
-        return redirect()->back()->with('success', 'Password updated successfully');
+        return response()->json([
+            'status' => true,
+            'message' => 'Password updated successfully.',
+        ], 200);
     }
 
 
