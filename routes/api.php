@@ -88,16 +88,16 @@ use Illuminate\Support\Facades\Route;
             // Route::get('analytics', [SellerDashboardController::class, 'analytics' ]);
 
             Route::controller(ProductController::class)->group(function(){
-                Route::get('products', 'index')->name('products.index');
-                Route::get('products/view/{id}', 'view')->name('products.view');
-                Route::post('products', 'store')->name('products.store');
-                Route::post('products/{id}', 'update')->name('products.update');
-                Route::get('products/{id}/delete', 'destroy')->name('products.destroy');
-                Route::get('products/{id}/status', 'status')->name('products.status');
-                Route::post('products-variant-edit/{id}', 'variantEdit')->name('products.variant.edit');
-                Route::get('products-variant-delete/{id}', 'variantDelete')->name('products.variant.delete');
+                Route::get('products', 'index');
+                Route::get('products/view/{id}', 'view');
+                Route::post('products', 'store');
+                Route::post('products/{id}', 'update');
+                Route::post('products-variant-edit/{id}', 'variantEdit');
+                Route::delete('products-variant-delete/{id}', 'variantDelete');
+                Route::delete('products/{id}/delete', 'destroy');
+                Route::get('products/{id}/status', 'status');
 
-                Route::post('products-ordering', 'productOrdering')->name('products.ordering');
+                // Route::post('products-ordering', 'productOrdering')->name('products.ordering');
 
                 // Route::post('products-variant-edit/{id}', 'productvariantEdit')->name('products.variant.edit');
             });

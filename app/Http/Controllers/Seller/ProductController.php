@@ -32,7 +32,6 @@ class ProductController extends Controller
                             })->when(request('start_date') && request('end_date'), function ($query) {
                                 $query->whereBetween('created_at', [Carbon::parse(request('start_date'))->startOfDay(), Carbon::parse(request('end_date'))->endOfDay()]);
                             })
-                            ->with(['variants.serials'])
                             ->orderBy('position', 'asc')
                             ->paginate(request('per_page', 20));
 
@@ -89,7 +88,7 @@ class ProductController extends Controller
             "description"        => "required|max:4294967195",
             'image'              => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:1024',
             'email_message'      => 'required|max:4294967195',
-            'veriant'            => 'required|array|min:1',
+            'variant'            => 'required|array|min:1',
             'meta_title'         => 'nullable|string|max:255',
             'meta_description'   => 'nullable|string|max:255',
             'email_button_text'  => 'nullable|string',
@@ -159,9 +158,9 @@ class ProductController extends Controller
             $product->save();
 
 
-            foreach ($request->veriant as $key => $veriant) {
+            foreach ($request->variant as $key => $variant) {
 
-                if (!isset($veriant['variant_name']) || $veriant['variant_name'] == null) {
+                if (!isset($variant['variant_name']) || $variant['variant_name'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -169,7 +168,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['variant_price']) || $veriant['variant_price'] == null) {
+                if (!isset($variant['variant_price']) || $variant['variant_price'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -177,7 +176,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['product_type']) || $veriant['product_type'] == null) {
+                if (!isset($variant['product_type']) || $variant['product_type'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -185,7 +184,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['is_default']) || $veriant['is_default'] == null) {
+                if (!isset($variant['is_default']) || $variant['is_default'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -195,14 +194,14 @@ class ProductController extends Controller
 
 
                 $product_variants = $product->variants()->create([
-                                        'name' => $veriant['variant_name'],
-                                        'price' => $veriant['variant_price'],
-                                        'product_type' => $veriant['product_type'],
-                                        'is_default' => $veriant['is_default']
+                                        'name' => $variant['variant_name'],
+                                        'price' => $variant['variant_price'],
+                                        'product_type' => $variant['product_type'],
+                                        'is_default' => $variant['is_default']
                                     ]);
 
 
-                if(!isset($veriant['product_type']) || $veriant['product_type'] == null || ($veriant['product_type'] != 'Serial' && $veriant['product_type'] != 'File' && $veriant['product_type'] != 'Text' && $veriant['product_type'] != 'Webhook')) {
+                if(!isset($variant['product_type']) || $variant['product_type'] == null || ($variant['product_type'] != 'Serial' && $variant['product_type'] != 'File' && $variant['product_type'] != 'Text' && $variant['product_type'] != 'Webhook')) {
 
                     DB::rollBack();
                     return response()->json([
@@ -213,9 +212,9 @@ class ProductController extends Controller
 
 
 
-                if ($veriant['product_type'] == 'Serial') {
+                if ($variant['product_type'] == 'Serial') {
 
-                    if (!isset($veriant['serial']) || $veriant['serial'] == null) {
+                    if (!isset($variant['serial']) || $variant['serial'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -224,7 +223,7 @@ class ProductController extends Controller
                     }
 
 
-                    if (!isset($veriant['serial_delimiter']) || $veriant['serial_delimiter'] == null) {
+                    if (!isset($variant['serial_delimiter']) || $variant['serial_delimiter'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -233,7 +232,7 @@ class ProductController extends Controller
                     }
 
 
-                    if (!isset($veriant['min_quantity']) || $veriant['min_quantity'] == null) {
+                    if (!isset($variant['min_quantity']) || $variant['min_quantity'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -242,7 +241,7 @@ class ProductController extends Controller
                     }
 
 
-                    if (!isset($veriant['max_quantity']) || $veriant['max_quantity'] == null) {
+                    if (!isset($variant['max_quantity']) || $variant['max_quantity'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -250,8 +249,9 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $serials  = explode($veriant['serial_delimiter'] == '/n' ? PHP_EOL : $veriant['serial_delimiter'], $veriant['serial']);
-                    $product_variants['serial_delimiter']  = $veriant['serial_delimiter'];
+                    $delimiter = $variant['serial_delimiter'] === '/n' || $variant['serial_delimiter'] == "\n"  ? "\n" : $variant['serial_delimiter'];
+                    $serials = explode($delimiter, $request->serial);
+                    $product_variants['serial_delimiter']  = $variant['serial_delimiter'];
 
                     foreach ($serials as $serial) {
                         ProductVariantSerial::create([
@@ -260,13 +260,13 @@ class ProductController extends Controller
                         ]);
                     }
 
-                    $product_variants['min_quantity']      = $veriant['min_quantity'];
-                    $product_variants['max_quantity']      = $veriant['max_quantity'];
+                    $product_variants['min_quantity']      = $variant['min_quantity'];
+                    $product_variants['max_quantity']      = $variant['max_quantity'];
                     $product_variants->save();
 
-                }elseif ($veriant['product_type'] == 'File') {
+                }elseif ($variant['product_type'] == 'File') {
 
-                    if (!isset($veriant['file']) || $veriant['file'] == null) {
+                    if (!isset($variant['file']) || $variant['file'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -274,7 +274,7 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $file = $veriant['file'];
+                    $file = $variant['file'];
                     $filename = time() . '.' . $file->getClientOriginalExtension();
                     $file->move(public_path('uploads/files'), $filename);
                     $file_path = '/uploads/files/' . $filename;
@@ -282,9 +282,9 @@ class ProductController extends Controller
                     $product_variants->save();
          
 
-                }elseif ($veriant['product_type'] == 'Text') {
+                }elseif ($variant['product_type'] == 'Text') {
 
-                    if (!isset($veriant['text']) || $veriant['text'] == null) {
+                    if (!isset($variant['text']) || $variant['text'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -292,13 +292,13 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $product_variants->text  = $veriant['text'];
+                    $product_variants->text  = $variant['text'];
                     $product_variants->save();
 
          
-                }elseif ($veriant['product_type'] == 'Webhook') {
+                }elseif ($variant['product_type'] == 'Webhook') {
 
-                    if (!isset($veriant['webhook']) || $veriant['webhook'] == null) {
+                    if (!isset($variant['webhook']) || $variant['webhook'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -306,7 +306,7 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $product_variants->text  = $veriant['webhook'];
+                    $product_variants->text  = $variant['webhook'];
                     $product_variants->save();
                 }
 
@@ -346,7 +346,7 @@ class ProductController extends Controller
             "description"        => "required|max:4294967195",
             'image'              => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:1024',
             'email_message'      => 'required|max:4294967195',
-            'veriant'            => 'required|array|min:1',
+            'variant'            => 'required|array|min:1',
             'meta_title'         => 'nullable|string|max:255',
             'meta_description'   => 'nullable|string|max:255',
             'email_button_text'  => 'nullable|string',
@@ -424,11 +424,11 @@ class ProductController extends Controller
             $product->save();
 
 
-            $old_veriants = [];
+            $old_variants = [];
 
-            foreach ($request->veriant as $key => $veriant) {
+            foreach ($request->variant as $key => $variant) {
 
-                if (!isset($veriant['variant_name']) || $veriant['variant_name'] == null) {
+                if (!isset($variant['variant_name']) || $variant['variant_name'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -436,7 +436,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['variant_price']) || $veriant['variant_price'] == null) {
+                if (!isset($variant['variant_price']) || $variant['variant_price'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -444,7 +444,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['product_type']) || $veriant['product_type'] == null) {
+                if (!isset($variant['product_type']) || $variant['product_type'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -452,7 +452,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['is_default']) || $veriant['is_default'] == null) {
+                if (!isset($variant['is_default']) || $variant['is_default'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -460,7 +460,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if (!isset($veriant['variant_id']) || $veriant['variant_id'] == null) {
+                if (!isset($variant['variant_id']) || $variant['variant_id'] == null) {
                     DB::rollBack();
                     return response()->json([
                         'success' => false,
@@ -468,7 +468,7 @@ class ProductController extends Controller
                     ], 422);
                 }
 
-                if(!isset($veriant['product_type']) || $veriant['product_type'] == null || ($veriant['product_type'] != 'Serial' && $veriant['product_type'] != 'File' && $veriant['product_type'] != 'Text' && $veriant['product_type'] != 'Webhook')) {
+                if(!isset($variant['product_type']) || $variant['product_type'] == null || ($variant['product_type'] != 'Serial' && $variant['product_type'] != 'File' && $variant['product_type'] != 'Text' && $variant['product_type'] != 'Webhook')) {
 
                     DB::rollBack();
                     return response()->json([
@@ -478,10 +478,10 @@ class ProductController extends Controller
                 }
 
 
-                if($veriant['variant_id'] != 0) {
+                if($variant['variant_id'] != 0) {
                     
 
-                    $product_variants = ProductVariants::find($veriant['variant_id']);
+                    $product_variants = ProductVariants::find($variant['variant_id']);
                     if (!$product_variants) {
                         DB::rollBack();
                         return response()->json([
@@ -490,12 +490,12 @@ class ProductController extends Controller
                         ], 404);
                     }
 
-                    $old_veriants[] = $product_variants->id;
+                    $old_variants[] = $product_variants->id;
 
-                    $product_variants->name = $veriant['variant_name'];
-                    $product_variants->price = $veriant['variant_price'];
-                    $product_variants->product_type = $veriant['product_type'];
-                    $product_variants->is_default = $veriant['is_default'];
+                    $product_variants->name = $variant['variant_name'];
+                    $product_variants->price = $variant['variant_price'];
+                    $product_variants->product_type = $variant['product_type'];
+                    $product_variants->is_default = $variant['is_default'];
                     $product_variants->save();
 
 
@@ -503,17 +503,17 @@ class ProductController extends Controller
                 } else {
 
                     $product_variants = $product->variants()->create([
-                        'name' => $veriant['variant_name'],
-                        'price' => $veriant['variant_price'],
-                        'product_type' => $veriant['product_type'],
-                        'is_default' => $veriant['is_default']
+                        'name' => $variant['variant_name'],
+                        'price' => $variant['variant_price'],
+                        'product_type' => $variant['product_type'],
+                        'is_default' => $variant['is_default']
                     ]);
                 }
 
 
-                if ($veriant['product_type'] == 'Serial') {
+                if ($variant['product_type'] == 'Serial') {
 
-                    if (!isset($veriant['serial']) || $veriant['serial'] == null) {
+                    if (!isset($variant['serial']) || $variant['serial'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -522,7 +522,7 @@ class ProductController extends Controller
                     }
 
 
-                    if (!isset($veriant['serial_delimiter']) || $veriant['serial_delimiter'] == null) {
+                    if (!isset($variant['serial_delimiter']) || $variant['serial_delimiter'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -531,7 +531,7 @@ class ProductController extends Controller
                     }
 
 
-                    if (!isset($veriant['min_quantity']) || $veriant['min_quantity'] == null) {
+                    if (!isset($variant['min_quantity']) || $variant['min_quantity'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -540,7 +540,7 @@ class ProductController extends Controller
                     }
 
 
-                    if (!isset($veriant['max_quantity']) || $veriant['max_quantity'] == null) {
+                    if (!isset($variant['max_quantity']) || $variant['max_quantity'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -550,8 +550,8 @@ class ProductController extends Controller
                     
                     ProductVariantSerial::where('product_variant_id', $product_variants->id)->delete();
 
-                    $serials  = explode($veriant['serial_delimiter'] == '/n' ? PHP_EOL : $veriant['serial_delimiter'], $veriant['serial']);
-                    $product_variants['serial_delimiter']  = $veriant['serial_delimiter'];
+                    $serials  = explode($variant['serial_delimiter'] == "/n" || $variant['serial_delimiter'] == "\n" ? "\n" : $variant['serial_delimiter'], $variant['serial']);
+                    $product_variants['serial_delimiter']  = $variant['serial_delimiter'];
 
                     foreach ($serials as $serial) {
                         ProductVariantSerial::create([
@@ -560,13 +560,13 @@ class ProductController extends Controller
                         ]);
                     }
 
-                    $product_variants['min_quantity']      = $veriant['min_quantity'];
-                    $product_variants['max_quantity']      = $veriant['max_quantity'];
+                    $product_variants['min_quantity']      = $variant['min_quantity'];
+                    $product_variants['max_quantity']      = $variant['max_quantity'];
                     $product_variants->save();
 
-                }elseif ($veriant['product_type'] == 'File') {
+                }elseif ($variant['product_type'] == 'File') {
 
-                    if (!isset($veriant['file']) || $veriant['file'] == null) {
+                    if (!isset($variant['file']) || $variant['file'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -574,7 +574,7 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $file = $veriant['file'];
+                    $file = $variant['file'];
                     $filename = time() . '.' . $file->getClientOriginalExtension();
                     $file->move(public_path('uploads/files'), $filename);
                     $file_path = '/uploads/files/' . $filename;
@@ -582,9 +582,9 @@ class ProductController extends Controller
                     $product_variants->save();
          
 
-                }elseif ($veriant['product_type'] == 'Text') {
+                }elseif ($variant['product_type'] == 'Text') {
 
-                    if (!isset($veriant['text']) || $veriant['text'] == null) {
+                    if (!isset($variant['text']) || $variant['text'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -592,13 +592,13 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $product_variants->text  = $veriant['text'];
+                    $product_variants->text  = $variant['text'];
                     $product_variants->save();
 
          
-                }elseif ($veriant['product_type'] == 'Webhook') {
+                }elseif ($variant['product_type'] == 'Webhook') {
 
-                    if (!isset($veriant['webhook']) || $veriant['webhook'] == null) {
+                    if (!isset($variant['webhook']) || $variant['webhook'] == null) {
                         DB::rollBack();
                         return response()->json([
                             'success' => false,
@@ -606,14 +606,14 @@ class ProductController extends Controller
                         ], 422);
                     }
 
-                    $product_variants->text  = $veriant['webhook'];
+                    $product_variants->text  = $variant['webhook'];
                     $product_variants->save();
                 }
 
             }
 
 
-            ProductVariants::where('product_id',$product->id)->whereNotIn('id',$old_veriants)->delete();
+            ProductVariants::where('product_id',$product->id)->whereNotIn('id',$old_variants)->delete();
 
             
 
@@ -641,29 +641,29 @@ class ProductController extends Controller
 
 
 
-    public function productOrdering(Request $request)
-    {
-        try {
-            $order = $request->input('order');
+    // public function productOrdering(Request $request)
+    // {
+    //     try {
+    //         $order = $request->input('order');
             
-            foreach ($order as $item) {
-                Product::where('id', $item['id'])->update([
-                    'position' => $item['position']
-                ]);
-            }
+    //         foreach ($order as $item) {
+    //             Product::where('id', $item['id'])->update([
+    //                 'position' => $item['position']
+    //             ]);
+    //         }
 
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }   
+    //         return response()->json(['success' => true]);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    //     }
+    // }   
 
 
 
     public function variantEdit(Request $request, $id)
     {
         // dd($request->all());
-        $request->validate([
+        $validate = Validator::make($request->all(), [
             'product_type'       => 'required|in:Serial,File,Text,Webhook',
             'variant_name'       => 'required|max:255',
             'variant_price'      => 'required|numeric',
@@ -675,8 +675,23 @@ class ProductController extends Controller
             'serial_delimiter'   => 'required_if:product_type,Serial|max:255',
         ]);
 
+        if ($validate->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validate->errors()->first()
+            ], 422);
+        }
 
-        $product_variant = ProductVariants::findOrFail($id);
+
+        $product_variant = ProductVariants::find($id);
+
+        if (!$product_variant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product variant not found'
+            ], 404);
+        }
+
         $product_variant->name         = $request->variant_name;
         $product_variant->price        = $request->variant_price;
         $product_variant->product_type = $request->product_type;
@@ -689,7 +704,8 @@ class ProductController extends Controller
             $product_variant->save();
 
             ProductVariantSerial::where('product_variant_id', $product_variant->id)->delete();
-            $serials  = explode($request->serial_delimiter == '/n' ? PHP_EOL : $request->serial_delimiter, $request->serial);
+            $delimiter = $request->serial_delimiter === "/n" || $request->serial_delimiter == "\n"  ? "\n" : $request->serial_delimiter;
+            $serials = explode($delimiter, $request->serial);
 
             foreach ($serials as $serial) {
                 ProductVariantSerial::create([
@@ -704,13 +720,7 @@ class ProductController extends Controller
                     if(notificationSetting()->is_email_notification == 1) {
 
                         $users = User::where('role', 1)->get();
-                        foreach ($users as $user) {           
-                            // Mail::to($user->email)->queue(new ProductRestockEmail(
-                            //     $product_variant->product->title,
-                            //     $product_variant->product->image,
-                            //     route('products.edit', $product_variant->product->id)
-                            // ));
-
+                        foreach ($users as $user) { 
                             $body = view('emails.product_restock', ['title' => $product_variant->product->title, 'name' => $product_variant->product->image, 'url' => route('products.edit', $product_variant->product->id)])->render();
                             dispatch(new EmailJob($user->email, $request->subject, $user->name, $body));
                         }
@@ -757,7 +767,10 @@ class ProductController extends Controller
         }
 
 
-        return redirect()->back()->with('success', 'Product variant updated successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Product variant updated successfully'
+        ], 200);
     }
 
 
@@ -765,10 +778,21 @@ class ProductController extends Controller
 
     public function variantDelete($id){
 
-        $product_variant = ProductVariants::findOrFail($id);
+        $product_variant = ProductVariants::find($id);
+
+        if (!$product_variant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product variant not found'
+            ], 404);
+        }
+
         $product_variant->delete();
 
-        return redirect()->back()->with('success', 'Product variant deleted successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Product variant deleted successfully'
+        ], 200);
     }
 
 
@@ -776,21 +800,43 @@ class ProductController extends Controller
 
     public function destroy($id){
 
-        $product = Product::findOrFail($id);
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
         $product->delete();
 
-        return redirect()->route('products.index')->with('success','Product deleted successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Product deleted successfully'
+        ], 200);
         
     }
 
 
     public function status($id){
 
-        $product = Product::findOrFail($id);
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
         $product->show_status = !$product->show_status;
         $product->save();
 
-        return redirect()->route('products.index')->with('success','Product deleted successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Product status updated successfully'
+        ], 200);
         
     }
 }
