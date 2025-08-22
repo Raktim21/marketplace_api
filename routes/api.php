@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\Route;
 
             Route::controller(SellerController::class)->group(function(){
                 Route::get('sellers', 'index');
-                Route::post('sellers-bulk-email', 'bulkEmail');
+                Route::put('sellers-bulk-email', 'bulkEmail');
                 Route::get('sellers-log/{id}', 'sellerLog');
                 Route::get('sellers-order/{id}', 'sellerOrder');
                 Route::put('sellers-status/{id}', 'status');
