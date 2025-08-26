@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Seller\AuthController;
+use App\Http\Controllers\Seller\CouponController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\GroupController;
 use App\Http\Controllers\Seller\ProductController;
@@ -112,6 +113,16 @@ use Illuminate\Support\Facades\Route;
                 Route::delete('group/{id}/delete', 'destroy');
                 // Route::get('group/{id}/status', 'status');
                 Route::get('group-get-products', 'getProducts');
+            });
+
+
+
+            Route::controller(CouponController::class)->group(function(){
+                Route::get('coupon-setting', 'index');
+                Route::get('coupon-setting/{id}', 'view');
+                Route::post('coupon-setting', 'store');
+                Route::post('coupon-setting/{id}', 'update');
+                Route::delete('coupon-setting/{id}/delete', 'destroy');
             });
 
 
