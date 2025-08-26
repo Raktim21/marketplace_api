@@ -27,7 +27,8 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $data = Product::where('is_group', 0)->when(request('search'), function ($query) {
+        $data = Product::where('is_group', 0)
+                            ->when(request('search'), function ($query) {
                                 $query->where('title', 'like', '%' . request('search') . '%');
                             })->when(request('start_date') && request('end_date'), function ($query) {
                                 $query->whereBetween('created_at', [Carbon::parse(request('start_date'))->startOfDay(), Carbon::parse(request('end_date'))->endOfDay()]);
@@ -775,7 +776,6 @@ class ProductController extends Controller
 
 
 
-
     public function variantDelete($id){
 
         $product_variant = ProductVariants::find($id);
@@ -794,7 +794,6 @@ class ProductController extends Controller
             'message' => 'Product variant deleted successfully'
         ], 200);
     }
-
 
 
 
@@ -819,6 +818,7 @@ class ProductController extends Controller
     }
 
 
+    
     public function status($id){
 
         $product = Product::find($id);

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Seller\AuthController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
+use App\Http\Controllers\Seller\GroupController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Middleware\InitializeTenantMiddleware;
 use App\Http\Middleware\JWTAuthMiddleware;
@@ -101,6 +102,19 @@ use Illuminate\Support\Facades\Route;
 
                 // Route::post('products-variant-edit/{id}', 'productvariantEdit')->name('products.variant.edit');
             });
+
+
+            Route::controller(GroupController::class)->group(function(){
+                Route::get('group', 'index');
+                Route::post('group', 'store');
+                Route::get('group/{id}', 'view');
+                Route::post('group/{id}', 'update');
+                Route::delete('group/{id}/delete', 'destroy');
+                // Route::get('group/{id}/status', 'status');
+                Route::get('group-get-products', 'getProducts');
+            });
+
+
         });
     
     });
