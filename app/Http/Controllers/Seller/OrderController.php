@@ -29,10 +29,10 @@ class OrderController extends Controller
                                 $query->where("payment_status", request()->payment_status);
                             }
                         })
-                        ->when(request()->start_date != null && request()->end_date != null, function ($query) {
+                        ->when(request()->from != null && request()->to != null, function ($query) {
                             $query->whereBetween('created_at', [
-                                Carbon::parse(request()->start_date)->startOfDay(),
-                                Carbon::parse(request()->end_date)->endOfDay()
+                                Carbon::parse(request()->from)->startOfDay(),
+                                Carbon::parse(request()->to)->endOfDay()
                             ]);
                         })
                         ->when(request()->payment_method != null , function ($query) {

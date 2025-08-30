@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Seller\AuthController;
 use App\Http\Controllers\Seller\CouponController;
+use App\Http\Controllers\Seller\CustomerController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\GroupController;
 use App\Http\Controllers\Seller\OrderController;
@@ -132,6 +133,22 @@ use Illuminate\Support\Facades\Route;
                 Route::get('invoice-details/{id}', 'view');
                 Route::post('invoice-bulk-email', 'bulkEmail');
                 Route::get('invoice-download/{id}', 'downloadInvoice');
+            });
+
+
+
+            Route::controller(CustomerController::class)->group(function(){
+                              
+                Route::get('customers', 'index');
+                Route::put('customers/change-status/{id}', 'changeStatus');
+          
+
+                Route::get('block-list', 'blockList');
+                Route::get('black-list/view/{id}', 'blockListView');
+                Route::put('block-list', 'blockListStore');
+                Route::delete('block-list/{id}/delete', 'blockListDestroy');
+         
+
             });
 
 

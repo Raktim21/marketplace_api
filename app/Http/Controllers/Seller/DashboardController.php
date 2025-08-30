@@ -14,7 +14,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
 
-                if (request()->has('filter')) {
+        if (request()->has('filter')) {
 
             if (request('filter') == 'today') {
 
@@ -338,10 +338,6 @@ class DashboardController extends Controller
             $payment_gateways[] = $payment_method;
             $payment_gateways_count[] = $stat->gateway_count;
         }
-
-        // return view('tenant.dashboard.dashboard', compact('total_sell','total_order_amount', 'total_product','months','monthly_order','conversion_rate','topProducts','payment_gateways','payment_gateways_count'));
-
-
  
         return response()->json([
             'status' => true,
