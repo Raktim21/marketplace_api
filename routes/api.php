@@ -7,6 +7,7 @@ use App\Http\Controllers\Seller\AuthController;
 use App\Http\Controllers\Seller\CouponController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\GroupController;
+use App\Http\Controllers\Seller\OrderController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Middleware\InitializeTenantMiddleware;
 use App\Http\Middleware\JWTAuthMiddleware;
@@ -116,13 +117,21 @@ use Illuminate\Support\Facades\Route;
             });
 
 
-
             Route::controller(CouponController::class)->group(function(){
                 Route::get('coupon-setting', 'index');
                 Route::get('coupon-setting/{id}', 'view');
                 Route::post('coupon-setting', 'store');
                 Route::post('coupon-setting/{id}', 'update');
                 Route::delete('coupon-setting/{id}/delete', 'destroy');
+            });
+
+
+            Route::controller(OrderController::class)->group(function(){
+                Route::get('invoice', 'index');
+                Route::get('invoice-analytics', 'analytics');
+                Route::get('invoice-details/{id}', 'view');
+                Route::post('invoice-bulk-email', 'bulkEmail');
+                Route::get('invoice-download/{id}', 'downloadInvoice');
             });
 
 
