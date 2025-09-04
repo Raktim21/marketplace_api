@@ -396,7 +396,7 @@ class AdminAuthController extends Controller
             ], 404);
         }
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (!Hash::check($request->current_password,    DB::table(env('CENTRAL_DB').'.users')->where('email', Auth::user()->email)->value('password'))) {
             return response()->json([
                 'status' => false,
                 'message' => 'Current password is incorrect.'
