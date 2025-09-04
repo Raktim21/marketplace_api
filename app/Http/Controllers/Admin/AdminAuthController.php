@@ -268,6 +268,13 @@ class AdminAuthController extends Controller
 
         $otp = UserEmailOtp::where('email', Auth::user()->email)->latest()->first();
 
+        if (!$otp) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP. Please try again.'
+            ], 400);
+        }
+
         if ($otp->otp != $request->otp) {
             return response()->json([
                 'status' => false,
@@ -275,8 +282,7 @@ class AdminAuthController extends Controller
             ], 400);
         }
 
-        UserEmailOtp::where('email', Auth::user()->email)->delete();
-
+     
 
         $user->name  = $request->name;
         $user->email = $request->email;
@@ -289,6 +295,8 @@ class AdminAuthController extends Controller
                 'name'  => $request->name,
                 'email' => $request->email
             ]);
+
+        UserEmailOtp::where('email', Auth::user()->email)->delete();
 
         return response()->json([
             'status' => true,
@@ -324,13 +332,21 @@ class AdminAuthController extends Controller
 
 
         $otp = UserEmailOtp::where('email', Auth::user()->email)->latest()->first();
+
+        if (!$otp) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP. Please try again.'
+            ], 400);
+        }
+
+
         if ($otp->otp != $request->otp) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP. Please try again.'
             ], 400);
         }
-        UserEmailOtp::where('email', Auth::user()->email)->delete();
 
 
 
@@ -340,6 +356,9 @@ class AdminAuthController extends Controller
         $image_path = '/uploads/user/images/' . $imagename;
         $user->image = $image_path;
         $user->save();
+
+
+        UserEmailOtp::where('email', Auth::user()->email)->delete();
 
         return response()->json([
             'status' => true,
@@ -385,15 +404,23 @@ class AdminAuthController extends Controller
         }
 
 
-
         $otp = UserEmailOtp::where('email', Auth::user()->email)->latest()->first();
+
+
+        if (!$otp) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP. Please try again.'
+            ], 400);
+        }
+
+
         if ($otp->otp != $request->otp) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP. Please try again.'
             ], 400);
         }
-        UserEmailOtp::where('email', Auth::user()->email)->delete();
 
 
         $user->password = Hash::make($request->password);
@@ -402,10 +429,13 @@ class AdminAuthController extends Controller
 
 
         DB::table(env('CENTRAL_DB').'.users')
-        ->where('email', Auth::user()->email)
-        ->update([
-            'password'  =>  Hash::make($request->password),
-        ]);
+                ->where('email', Auth::user()->email)
+                ->update([
+                    'password'  =>  Hash::make($request->password),
+                ]);
+
+
+        UserEmailOtp::where('email', Auth::user()->email)->delete();
 
         return response()->json([
             'status' => true,
