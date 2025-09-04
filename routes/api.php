@@ -68,7 +68,7 @@ use Illuminate\Support\Facades\Route;
         Route::get('refresh',[AuthController::class,'refresh']);
 
         Route::put('forget-pass', [AuthController::class, 'forgetPassword']);
-        Route::put('verify-otp', [AuthController::class, 'verifyOtp']);
+        Route::put('verify-otp-forget-pass', [AuthController::class, 'verifyOtp']);
         Route::put('reset-pass', [AuthController::class, 'resetPassword']);
     
         Route::middleware([
